@@ -1,0 +1,10 @@
+{
+    "dataset": "Kaggle Fake News Detection Dataset",
+    "model_name": "Random Forest",
+    "vectorizer": "TF-IDF",
+    "accuracy": 0.9955669224211424,
+    "precision": 0.9977536503182328,
+    "recall": 0.9925512104283054,
+    "f1_score": 0.9951456310679612,
+    "trained_at": "2026-08-22T12:00:47.063997"
+}

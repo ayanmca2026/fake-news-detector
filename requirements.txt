@@ -1,0 +1,16 @@
+fastapi
+uvicorn
+sqlalchemy
+pydantic
+pydantic-settings
+psycopg2-binary
+python-jose[cryptography]
+passlib[bcrypt]
+pandas
+numpy
+scikit-learn
+nltk
+spacy
+pytest
+httpx
+python-multipart

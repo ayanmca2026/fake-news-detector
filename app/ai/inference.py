@@ -46,11 +46,17 @@ class InferenceEngine:
         else:
             confidence_level = "HIGH"
             
-        # 2. Credibility Score
-        cred = self.credibility.analyze(content, headline)
+        # 2. Credibility Score — now incorporates prediction + confidence
+        cred = self.credibility.analyze(
+            text=content,
+            title=headline,
+            prediction=label_str,
+            confidence=confidence
+        )
         
-        # 3. Keywords
-        kw = self.keywords.extract(clean_text)
+        # 3. Keywords — extract from ORIGINAL text (not preprocessed)
+        #    to avoid concatenated/lemmatized words
+        kw = self.keywords.extract(combined_text)
         
         # 4. Summary
         summary = self.summarizer.generate_summary(content if len(content) > 10 else combined_text)
@@ -67,5 +73,5 @@ class InferenceEngine:
             "keywords": kw,
             "summary": summary,
             "explanation": explanation,
-            "model_name": "TF-IDF + Classical ML"
+            "model_name": "Random Forest (TF-IDF)"
         }

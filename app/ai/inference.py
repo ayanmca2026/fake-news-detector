@@ -23,7 +23,10 @@ class InferenceEngine:
             
         self.preprocessor = TextPreprocessor()
         self.credibility = CredibilityEngine()
-        self.keywords = KeywordExtractor()
+        
+        # Pass the vectorizer to keywords extractor to leverage TF-IDF weights and bigrams
+        vectorizer_instance = self.classifier.vectorizer if self.classifier else None
+        self.keywords = KeywordExtractor(vectorizer=vectorizer_instance)
         self.summarizer = SummarizationService()
         
     def analyze(self, headline: str, content: str, source_url: str = None):
@@ -54,9 +57,8 @@ class InferenceEngine:
             confidence=confidence
         )
         
-        # 3. Keywords — extract from ORIGINAL text (not preprocessed)
-        #    to avoid concatenated/lemmatized words
-        kw = self.keywords.extract(combined_text)
+        # 3. Keywords — extract using TF-IDF weights on the preprocessed text
+        kw = self.keywords.extract(clean_text)
         
         # 4. Summary
         summary = self.summarizer.generate_summary(content if len(content) > 10 else combined_text)
@@ -73,5 +75,5 @@ class InferenceEngine:
             "keywords": kw,
             "summary": summary,
             "explanation": explanation,
-            "model_name": "Random Forest (TF-IDF)"
+            "model_name": "TF-IDF + Random Forest"
         }

@@ -15,7 +15,7 @@ export default function Login() {
       localStorage.setItem('token', data.access_token);
       window.location.href = '/dashboard';
     } catch (err) {
-      setError('Invalid credentials');
+      setError(err.response?.data?.detail || 'Invalid credentials');
     }
   };
 

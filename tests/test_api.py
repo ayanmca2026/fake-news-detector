@@ -27,3 +27,11 @@ def test_register_and_login():
     )
     assert login_response.status_code == 200
     assert "access_token" in login_response.json()
+
+def test_model_info():
+    response = client.get("/api/model/info")
+    assert response.status_code == 200
+    data = response.json()
+    assert "model_name" in data
+    assert "accuracy" in data["metrics"]
+    assert "dataset" in data

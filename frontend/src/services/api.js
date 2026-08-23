@@ -1,11 +1,14 @@
 import axios from 'axios';
 
-// Will strictly use the environment variable. Ensure .env is set locally for dev.
+// Resolve base URL from env, or default to relative/local for development
+const resolvedBaseUrl = import.meta.env.VITE_API_URL || 'https://fake-news-backend-0p9c.onrender.com/api';
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL: resolvedBaseUrl,
+  timeout: 30000,
 });
 
-// Add a request interceptor to add the auth token to headers
+// Add auth token to every request if present
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token) {
@@ -14,6 +17,23 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// Global response interceptor for 401 Unauthorized handling
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      // If token expired or invalid, clear and notify
+      const currentPath = window.location.pathname;
+      if (currentPath !== '/login' && currentPath !== '/register' && currentPath !== '/') {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
+// Auth Services
 export const login = async (email, password) => {
   const formData = new URLSearchParams();
   formData.append('username', email);
@@ -35,19 +55,56 @@ export const getMe = async () => {
   return response.data;
 };
 
-export const analyzeNews = async (title, content, source_url) => {
-  const response = await api.post('/prediction/analyze', { title, content, source_url });
+// Prediction / Analysis Services
+export const analyzeNews = async (title, content, source_url = '') => {
+  const response = await api.post('/prediction/analyze', { 
+    title: title || '', 
+    content, 
+    source_url: source_url || '' 
+  });
   return response.data;
 };
 
+// Dashboard Services
 export const getDashboardStats = async () => {
   const response = await api.get('/dashboard/stats');
   return response.data;
 };
 
-export const getHistory = async () => {
-  const response = await api.get('/history/');
+// History Services
+export const getHistory = async (skip = 0, limit = 100) => {
+  const response = await api.get(`/history/?skip=${skip}&limit=${limit}`);
   return response.data;
+};
+
+export const getHistoryDetail = async (historyId) => {
+  const response = await api.get(`/history/${historyId}`);
+  return response.data;
+};
+
+export const deleteHistory = async (historyId) => {
+  const response = await api.delete(`/history/${historyId}`);
+  return response.data;
+};
+
+// Model Intelligence Services
+export const getModelInfo = async () => {
+  const response = await api.get('/model/info');
+  return response.data;
+};
+
+// Health Check
+export const checkHealth = async () => {
+  // Check health endpoint (handle both with and without /api)
+  try {
+    const response = await axios.get(
+      resolvedBaseUrl.replace(/\/api$/, '') + '/api/health', 
+      { timeout: 5000 }
+    );
+    return response.data;
+  } catch {
+    return { status: 'offline' };
+  }
 };
 
 export default api;

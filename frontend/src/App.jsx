@@ -1,59 +1,109 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Link, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { ToastProvider } from './context/ToastContext';
+
+// Layout
+import AppLayout from './components/layout/AppLayout';
+
+// Pages
+import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import AnalyzeNews from './pages/AnalyzeNews';
+import History from './pages/History';
+import Analytics from './pages/Analytics';
+import ModelIntelligence from './pages/ModelIntelligence';
+import HowItWorks from './pages/HowItWorks';
+import Settings from './pages/Settings';
 
-function App() {
-  const isAuthenticated = !!localStorage.getItem('token');
+// Protected Route Guard
+function ProtectedRoute({ children }) {
+  const { isAuthenticated, loading } = useAuth();
 
-  return (
-    <BrowserRouter>
-      <div className="min-h-screen flex flex-col">
-        <header className="bg-white shadow-sm border-b">
-          <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-            <Link to="/" className="text-xl font-bold text-blue-600">AI News Detector</Link>
-            <nav className="space-x-4">
-              {!isAuthenticated ? (
-                <>
-                  <Link to="/login" className="text-gray-600 hover:text-gray-900">Login</Link>
-                  <Link to="/register" className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">Register</Link>
-                </>
-              ) : (
-                <>
-                  <Link to="/dashboard" className="text-gray-600 hover:text-gray-900">Dashboard</Link>
-                  <Link to="/analyze" className="text-gray-600 hover:text-gray-900">Analyze</Link>
-                  <button 
-                    onClick={() => { localStorage.removeItem('token'); window.location.href='/'; }}
-                    className="text-red-600 hover:text-red-800"
-                  >
-                    Logout
-                  </button>
-                </>
-              )}
-            </nav>
-          </div>
-        </header>
-
-        <main className="flex-grow p-4 md:p-8 bg-gray-50">
-          <Routes>
-            <Route path="/" element={
-              <div className="text-center py-20">
-                <h1 className="text-5xl font-extrabold text-gray-900 mb-4">Detect Misinformation.</h1>
-                <p className="text-xl text-gray-600 mb-8">An AI-powered fake news analysis platform designed to help students evaluate online information.</p>
-                <Link to="/register" className="bg-blue-600 text-white px-8 py-3 rounded-full text-lg hover:bg-blue-700">Get Started</Link>
-              </div>
-            } />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/dashboard" element={isAuthenticated ? <Dashboard /> : <Navigate to="/login" />} />
-            <Route path="/analyze" element={isAuthenticated ? <AnalyzeNews /> : <Navigate to="/login" />} />
-          </Routes>
-        </main>
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#0B0F19] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-2 border-cyan-500/30 border-t-cyan-500 rounded-full animate-spin" />
+          <span className="text-xs font-semibold text-slate-400">Loading TruthLens AI...</span>
+        </div>
       </div>
-    </BrowserRouter>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return children;
+}
+
+// Public Route Guard (Redirects to dashboard if already logged in)
+function PublicRoute({ children }) {
+  const { isAuthenticated, loading } = useAuth();
+
+  if (!loading && isAuthenticated) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return children;
+}
+
+function AppRoutes() {
+  return (
+    <Routes>
+      {/* Public Pages */}
+      <Route path="/" element={<Landing />} />
+      <Route
+        path="/login"
+        element={
+          <PublicRoute>
+            <Login />
+          </PublicRoute>
+        }
+      />
+      <Route
+        path="/register"
+        element={
+          <PublicRoute>
+            <Register />
+          </PublicRoute>
+        }
+      />
+
+      {/* Protected Workspace Pages */}
+      <Route
+        element={
+          <ProtectedRoute>
+            <AppLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/analyze" element={<AnalyzeNews />} />
+        <Route path="/history" element={<History />} />
+        <Route path="/analytics" element={<Analytics />} />
+        <Route path="/model" element={<ModelIntelligence />} />
+        <Route path="/how-it-works" element={<HowItWorks />} />
+        <Route path="/settings" element={<Settings />} />
+      </Route>
+
+      {/* Catch-all redirect */}
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   );
 }
 
-export default App;
+export default function App() {
+  return (
+    <BrowserRouter>
+      <AuthProvider>
+        <ToastProvider>
+          <AppRoutes />
+        </ToastProvider>
+      </AuthProvider>
+    </BrowserRouter>
+  );
+}

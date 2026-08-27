@@ -30,8 +30,10 @@ export default function Login() {
         setError('Incorrect email or password. Please check your credentials.');
       } else if (detail) {
         setError(detail);
+      } else if (err.code === 'ECONNABORTED' || !err.response) {
+        setError('Server is waking up from idle state. Please wait 10-20 seconds and click Sign In again.');
       } else {
-        setError('Unable to sign in. Please check your connection and try again.');
+        setError('Unable to sign in. Please verify your credentials or try again in a few moments.');
       }
     } finally {
       setLoading(false);

@@ -5,7 +5,7 @@ const resolvedBaseUrl = import.meta.env.VITE_API_URL || 'https://fake-news-backe
 
 const api = axios.create({
   baseURL: resolvedBaseUrl,
-  timeout: 30000,
+  timeout: 60000,
 });
 
 // Add auth token to every request if present

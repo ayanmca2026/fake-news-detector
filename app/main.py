@@ -15,6 +15,9 @@ app = FastAPI(
 
 # CORS configuration
 origins = settings.cors_origin_list if settings.cors_origin_list else ["http://localhost:5173", "http://127.0.0.1:5173"]
+origins.extend(["https://fake-news-detector-ayan007.vercel.app", "https://fake-news-detector-smoky-nine.vercel.app"])
+# Ensure list is unique
+origins = list(set(origins))
 
 app.add_middleware(
     CORSMiddleware,

@@ -39,11 +39,7 @@ app.include_router(model_info.router, prefix="/api/model", tags=["model"])
 @app.get("/health", tags=["health"])
 @app.get("/api/health", tags=["health"])
 def health_check():
-    return {
-        "status": "ok", 
-        "message": "TruthLens AI — Fake News Detector API is running",
-        "api_docs": "/docs"
-    }
+    return {"status": "ok", "message": "Fake News Detector API is running"}
 
 @app.exception_handler(404)
 async def custom_404_handler(request: Request, exc):

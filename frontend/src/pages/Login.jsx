@@ -28,8 +28,10 @@ export default function Login() {
       const detail = err.response?.data?.detail;
       if (err.response?.status === 401) {
         setError('Incorrect email or password. Please check your credentials.');
+      } else if (err.response?.status === 404 || detail === 'Not Found') {
+        setError('Authentication service unreachable. Please wait a moment while the server wakes up and try again.');
       } else if (detail) {
-        setError(detail);
+        setError(typeof detail === 'string' ? detail : 'Authentication error. Please try again.');
       } else if (err.code === 'ECONNABORTED' || !err.response) {
         setError('Server is waking up from idle state. Please wait 10-20 seconds and click Sign In again.');
       } else {

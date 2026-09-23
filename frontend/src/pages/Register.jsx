@@ -66,8 +66,12 @@ export default function Register() {
       const detail = err.response?.data?.detail;
       if (err.response?.status === 400 && detail?.includes('already registered')) {
         setError('An account with this email already exists. Try signing in.');
+      } else if (err.response?.status === 404 || detail === 'Not Found') {
+        setError('Registration service unreachable. Please wait a moment while the server wakes up and try again.');
       } else if (detail) {
-        setError(detail);
+        setError(typeof detail === 'string' ? detail : 'Registration error. Please try again.');
+      } else if (err.code === 'ECONNABORTED' || !err.response) {
+        setError('Server is waking up from idle state. Please wait 10-20 seconds and click Create Account again.');
       } else {
         setError('Registration failed. Please verify your details and try again.');
       }

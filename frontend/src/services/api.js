@@ -1,7 +1,16 @@
 import axios from 'axios';
 
-// Resolve base URL from env, or default to relative/local for development
-const resolvedBaseUrl = import.meta.env.VITE_API_URL || 'https://fake-news-backend-0p9c.onrender.com/api';
+// Robust base URL resolution: guarantees valid backend endpoint with /api suffix
+const getSanitizedBaseUrl = () => {
+  let url = import.meta.env.VITE_API_URL || 'https://fake-news-backend-0p9c.onrender.com/api';
+  url = url.trim().replace(/\/+$/, '');
+  if (!url.endsWith('/api')) {
+    url += '/api';
+  }
+  return url;
+};
+
+const resolvedBaseUrl = getSanitizedBaseUrl();
 
 const api = axios.create({
   baseURL: resolvedBaseUrl,
